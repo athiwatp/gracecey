@@ -4,7 +4,7 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/athiwatp/gracecey)](https://goreportcard.com/report/github.com/athiwatp/gracecey)
 [![Build Status](https://travis-ci.org/pseidemann/finish.svg?branch=master)](https://travis-ci.org/athiwatp/gracecey)
 
-method and therefore requires Go 1.8+.
+method and therefore requires Go 1.11+.
 
 ## Quick Start
 
