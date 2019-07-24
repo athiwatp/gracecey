@@ -47,10 +47,10 @@ func Test(t *testing.T) {
 	srv := &testServer{wait: time.Second}
 	log := &logRecorder{}
 
-	fin := &FlushFinish{Log: log}
-	fin.Add(srv)
+	graceful := &FlushFinish{Log: log}
+	graceful.Add(srv)
 
-	keeper := fin.keepers[0]
+	keeper := graceful.keepers[0]
 
 	if keeper.srv != srv {
 		t.Error("expected server to be added")
@@ -64,13 +64,13 @@ func Test(t *testing.T) {
 		t.Error("expected timeout to be the default")
 	}
 
-	go fin.Trigger()
+	go graceful.Trigger()
 
 	if srv.shutdown {
 		t.Error("expected server not to be shutdown yet")
 	}
 
-	fin.Wait()
+	graceful.Wait()
 
 	if !srv.shutdown {
 		t.Error("expected server to be shutdown")
@@ -97,18 +97,18 @@ func TestSettingName(t *testing.T) {
 	srv := &testServer{}
 	log := &logRecorder{}
 
-	fin := &FlushFinish{Log: log}
-	fin.Add(srv, WithName("foobar"))
+	graceful := &FlushFinish{Log: log}
+	graceful.Add(srv, WithName("foobar"))
 
-	keeper := fin.keepers[0]
+	keeper := graceful.keepers[0]
 
 	if keeper.name != "foobar" {
 		t.Error("expected name to be set")
 	}
 
-	go fin.Trigger()
+	go graceful.Trigger()
 
-	fin.Wait()
+	graceful.Wait()
 
 	if !reflect.DeepEqual(log.infos, []string{
 		"finish: shutdown signal received",
@@ -126,17 +126,17 @@ func TestSettingName(t *testing.T) {
 func TestUpdateNames(t *testing.T) {
 	srv := &testServer{}
 
-	fin := New()
-	fin.Add(srv, WithName("foobar"))
-	fin.Add(srv)
+	graceful := New()
+	graceful.Add(srv, WithName("foobar"))
+	graceful.Add(srv)
 
-	fin.updateNames()
+	graceful.updateNames()
 
-	if fin.keepers[0].name != "foobar" {
+	if graceful.keepers[0].name != "foobar" {
 		t.Error("wrong name")
 	}
 
-	if fin.keepers[1].name != "server #2" {
+	if graceful.keepers[1].name != "server #2" {
 		t.Error("wrong name")
 	}
 }
@@ -144,10 +144,10 @@ func TestUpdateNames(t *testing.T) {
 func TestGlobalTimeout(t *testing.T) {
 	srv := &testServer{}
 
-	fin := &FlushFinish{Timeout: 21 * time.Second}
-	fin.Add(srv)
+	graceful := &FlushFinish{Timeout: 21 * time.Second}
+	graceful.Add(srv)
 
-	keeper := fin.keepers[0]
+	keeper := graceful.keepers[0]
 
 	if keeper.timeout != 21*time.Second {
 		t.Error("expected timeout to be changed")
@@ -157,10 +157,10 @@ func TestGlobalTimeout(t *testing.T) {
 func TestOverridingTimeout(t *testing.T) {
 	srv := &testServer{}
 
-	fin := New()
-	fin.Add(srv, WithTimeout(42*time.Second))
+	graceful := New()
+	graceful.Add(srv, WithTimeout(42*time.Second))
 
-	keeper := fin.keepers[0]
+	keeper := graceful.keepers[0]
 
 	if keeper.timeout != 42*time.Second {
 		t.Error("expected timeout to be set")
@@ -171,12 +171,12 @@ func TestSlowServer(t *testing.T) {
 	srv := &testServer{wait: 2 * time.Second}
 	log := &logRecorder{}
 
-	fin := &FlushFinish{Log: log}
-	fin.Add(srv, WithTimeout(time.Second))
+	graceful := &FlushFinish{Log: log}
+	graceful.Add(srv, WithTimeout(time.Second))
 
-	go fin.Trigger()
+	go graceful.Trigger()
 
-	fin.Wait()
+	graceful.Wait()
 
 	if !reflect.DeepEqual(log.infos, []string{
 		"finish: shutdown signal received",
@@ -198,8 +198,8 @@ func TestCustomSignal(t *testing.T) {
 
 	mySignal := syscall.SIGUSR1
 
-	fin := &FlushFinish{Log: log, Signals: []os.Signal{mySignal}}
-	fin.Add(srv)
+	graceful := &FlushFinish{Log: log, Signals: []os.Signal{mySignal}}
+	graceful.Add(srv)
 
 	go func() {
 		// sleep so Wait() can actually catch the signal
@@ -212,7 +212,7 @@ func TestCustomSignal(t *testing.T) {
 		p.Signal(mySignal)
 	}()
 
-	fin.Wait()
+	graceful.Wait()
 
 	if !reflect.DeepEqual(log.infos, []string{
 		"finish: shutdown signal received",

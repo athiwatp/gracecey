@@ -54,15 +54,15 @@ $ curl localhost:8080/helloworld
 
 This will print "world" after 5 seconds.
 
-When the server is terminated with pressing `Ctrl+C` or `kill`, while `/hello` is
+When the server is terminated with pressing `Ctrl+C` or `kill`, while `/helloworld` is
 loading, finish will wait until the request was handled, before the server gets
 killed.
 
 The output will look like this:
 ```
-2038/01/19 03:14:08 finish: shutdown signal received
-2038/01/19 03:14:08 finish: shutting down server ...
-2038/01/19 03:14:11 finish: server closed
+2019/01/19 09:09:08 finish: shutdown signal received
+2019/01/19 09:09:08 finish: shutting down server ...
+2019/01/19 09:09:10 finish: server closed
 ```
 
 ### Example
